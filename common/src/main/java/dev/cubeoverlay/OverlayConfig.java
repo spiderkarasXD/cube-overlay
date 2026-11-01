@@ -20,7 +20,7 @@ public final class OverlayConfig {
     private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("cube-overlay.json");
 
     public List<String> combo = new ArrayList<>(KeyCombo.defaultCombo().toNames());
-    public String homePage = "https://www.google.com/?hl=ru";
+    public String homePage = "https://www.google.com/";
     /** Ставить ли одиночную игру на паузу, пока открыт оверлей. */
     public boolean pauseGame = false;
     /** Прозрачность затемнения фона, 0–255. */
@@ -30,7 +30,7 @@ public final class OverlayConfig {
     public int uiScale = 0;
     public List<QuickLink> quickLinks = new ArrayList<>(List.of(
             new QuickLink("YouTube", "https://www.youtube.com"),
-            new QuickLink("Google", "https://www.google.com/?hl=ru"),
+            new QuickLink("Google", "https://www.google.com/"),
             new QuickLink("Minecraft Wiki", "https://minecraft.wiki"),
             new QuickLink("Twitch", "https://www.twitch.tv"),
             new QuickLink("Modrinth", "https://modrinth.com/mods"),
@@ -76,8 +76,12 @@ public final class OverlayConfig {
 
     private void fixup() {
         if (combo == null) combo = new ArrayList<>(KeyCombo.defaultCombo().toNames());
-        if (homePage == null || homePage.isBlank()) homePage = "https://www.google.com";
         if (quickLinks == null) quickLinks = new ArrayList<>();
+        // 1.0.0 жёстко ставил русский Google — теперь язык берётся из игры
+        if (homePage == null || homePage.isBlank() || homePage.equals("https://www.google.com/?hl=ru")) {
+            homePage = "https://www.google.com/";
+        }
+        quickLinks.replaceAll(l -> l.url().equals("https://www.google.com/?hl=ru") ? new QuickLink(l.name(), "https://www.google.com/") : l);
         backgroundAlpha = Math.clamp(backgroundAlpha, 0, 255);
         uiScale = Math.clamp(uiScale, 0, 4);
     }

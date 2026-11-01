@@ -103,7 +103,7 @@ public final class BrowserTabs {
         if (!isReady() || tabs.size() >= MAX_TABS) {
             return null;
         }
-        Tab tab = new Tab(MCEFApi.getInstance().createBrowser(normalizeUrl(url), false));
+        Tab tab = new Tab(MCEFApi.getInstance().createBrowser(localize(normalizeUrl(url)), false));
         tabs.add(tab);
         select(tabs.size() - 1);
         return tab;
@@ -129,6 +129,40 @@ public final class BrowserTabs {
         active = -1;
     }
 
+    /** Язык игры: en_us → en, ru_ru → ru, zh_cn → zh-CN (так его ждут сайты и Google). */
+    public static String gameLanguage() {
+        String code = net.minecraft.client.Minecraft.getInstance().options.languageCode;
+        if (code == null || code.isBlank()) return "en";
+        String[] parts = code.toLowerCase(Locale.ROOT).split("_");
+        if (parts.length > 1 && (parts[0].equals("zh") || parts[0].equals("pt"))) {
+            return parts[0] + "-" + parts[1].toUpperCase(Locale.ROOT);
+        }
+        return parts[0];
+    }
+
+    /**
+     * Google и YouTube выбирают язык по IP, поэтому при открытии добавляем hl=язык игры, если его нет.
+     * (Глобально задать язык Chromium из Java нельзя: jcef требует для этого свой внутренний поток.)
+     */
+    public static String localize(String url) {
+        try {
+            URI uri = URI.create(url);
+            String host = uri.getHost();
+            String query = uri.getQuery();
+            if (host == null || !host.matches("(www[.]|m[.])?(google[.][a-z.]+|youtube[.]com)")
+                    || (query != null && query.matches("(.*&)?hl=.*"))) {
+                return url;
+            }
+            int hash = url.indexOf('#');
+            String base = hash >= 0 ? url.substring(0, hash) : url;
+            String tail = hash >= 0 ? url.substring(hash) : "";
+            String sep = base.contains("?") ? "&" : (uri.getPath() == null || uri.getPath().isEmpty() ? "/?" : "?");
+            return base + sep + "hl=" + gameLanguage() + tail;
+        } catch (IllegalArgumentException e) {
+            return url;
+        }
+    }
+
     /**
      * Превращает текст из адресной строки в URL: "youtube.com" → https://youtube.com,
      * "как сделать портал" → поиск в Google.
@@ -147,6 +181,6 @@ public final class BrowserTabs {
         if (looksLikeHost) {
             return "https://" + text;
         }
-        return "https://www.google.com/search?hl=ru&q=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
+        return "https://www.google.com/search?hl=" + gameLanguage() + "&q=" + URLEncoder.encode(text, StandardCharsets.UTF_8);
     }
 }

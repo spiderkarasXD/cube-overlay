@@ -205,7 +205,7 @@ public class OverlayScreen extends CubeScreen {
     }
 
     private void navigate(String input) {
-        String url = BrowserTabs.normalizeUrl(input);
+        String url = BrowserTabs.localize(BrowserTabs.normalizeUrl(input));
         BrowserTabs.Tab tab = tabs.active();
         if (tab == null) {
             tabs.open(url);

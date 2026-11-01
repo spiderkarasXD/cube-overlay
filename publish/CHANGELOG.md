@@ -1,3 +1,9 @@
+## 1.0.1
+
+- Typing in web pages: Backspace, Enter, arrows, Delete, Home/End and Ctrl+A/C/V/X/Z now work (Windows).
+- The browser follows the game language: Google and YouTube open in the language selected in Minecraft.
+- Clicking the address bar selects the whole address; clicking anywhere on a text field focuses it.
+
 ## 1.0.0
 
 First release.
