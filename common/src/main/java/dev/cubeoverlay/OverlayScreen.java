@@ -28,7 +28,7 @@ public class OverlayScreen extends CubeScreen {
     private static final int TAB_H = 15;
     private static final long FADE_MS = 180;
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE, d MMMM", Locale.forLanguageTag("ru"));
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE, d MMMM");
     private static final int[] LINK_COLORS = {0xFFFF4E45, 0xFF4C8BF5, 0xFF62C462, 0xFFA970FF, 0xFF1BD96A, 0xFFE6EDF3, 0xFFFFB443};
 
     private final Screen parent;
@@ -92,11 +92,11 @@ public class OverlayScreen extends CubeScreen {
         addrW = winX + winW - 6 - addrX;
 
         String old = address != null ? address.getValue() : "";
-        address = new EditBox(font, addrX + 14, barY + 6, addrW - 18, 10, Component.literal("Адрес"));
+        address = new EditBox(font, addrX + 14, barY + 6, addrW - 18, 10, Component.literal(Tr.t("address")));
         address.setBordered(false);
         address.setMaxLength(8192);
         address.setTextColor(Ui.TEXT);
-        address.setHint(Component.literal("Поиск в Google или адрес сайта"));
+        address.setHint(Component.literal(Tr.t("address.hint")));
         address.setValue(old);
         addRenderableWidget(address);
 
@@ -185,7 +185,7 @@ public class OverlayScreen extends CubeScreen {
     }
 
     private int hintWidth() {
-        int w = font.width("закрыть") + 6;
+        int w = font.width(Tr.t("close")) + 6;
         for (String k : comboKeys()) w += font.width(k) + 8 + 10;
         return w;
     }
@@ -537,35 +537,35 @@ public class OverlayScreen extends CubeScreen {
         // часы
         Ui.glass(d, x, y, w, 46);
         Ui.bigText(d, TIME.format(now), x + 9, y + 8, Ui.TEXT, 2.5f);
-        d.text(DATE.format(now), x + 9, y + 33, Ui.MUTED);
+        d.text(DATE.withLocale(gameLocale()).format(now), x + 9, y + 33, Ui.MUTED);
         y += 46 + 6;
 
         // игра
         List<String[]> game = new ArrayList<>();
         ServerData server = minecraft.getCurrentServer();
         if (minecraft.hasSingleplayerServer()) {
-            game.add(new String[]{"Мир", "одиночный"});
+            game.add(new String[]{Tr.t("row.world"), Tr.t("row.singleplayer")});
         } else if (server != null) {
-            game.add(new String[]{"Сервер", server.ip});
+            game.add(new String[]{Tr.t("row.server"), server.ip});
         } else {
-            game.add(new String[]{"Где", "меню"});
+            game.add(new String[]{Tr.t("row.where"), Tr.t("row.menu")});
         }
-        game.add(new String[]{"Сессия", formatDuration(CubeOverlay.sessionMillis())});
+        game.add(new String[]{Tr.t("row.session"), formatDuration(CubeOverlay.sessionMillis())});
         game.add(new String[]{"FPS", String.valueOf(minecraft.getFps())});
-        y = card(d, x, y, w, "ИГРА", game);
+        y = card(d, x, y, w, Tr.t("card.game"), game);
 
         LocalPlayer player = minecraft.player;
         if (player != null && minecraft.level != null) {
-            y = card(d, x, y, w, "ИГРОК", List.of(
+            y = card(d, x, y, w, Tr.t("card.player"), List.of(
                     new String[]{"X Y Z", player.getBlockX() + " " + player.getBlockY() + " " + player.getBlockZ()},
-                    new String[]{"Мир", dimensionName()},
-                    new String[]{"Здоровье", (int) Math.ceil(player.getHealth()) + "/" + (int) player.getMaxHealth()}
+                    new String[]{Tr.t("row.dimension"), dimensionName()},
+                    new String[]{Tr.t("row.health"), (int) Math.ceil(player.getHealth()) + "/" + (int) player.getMaxHealth()}
             ));
         }
 
         List<String[]> browser = new ArrayList<>();
-        browser.add(new String[]{"Вкладки", tabs.tabs().size() + " / " + BrowserTabs.MAX_TABS});
-        card(d, x, y, w, "БРАУЗЕР", browser);
+        browser.add(new String[]{Tr.t("row.tabs"), tabs.tabs().size() + " / " + BrowserTabs.MAX_TABS});
+        card(d, x, y, w, Tr.t("card.browser"), browser);
     }
 
     private int card(Draw d, int x, int y, int w, String title, List<String[]> rows) {
@@ -632,13 +632,13 @@ public class OverlayScreen extends CubeScreen {
         // страница
         d.fill(viewX, viewY, viewX + viewW, viewY + viewH, 0xFF0B0F14);
         if (BrowserTabs.isFailed()) {
-            centered(d, "Не удалось запустить Chromium", -6, Ui.DANGER);
-            centered(d, "Подробности в logs/latest.log", 6, Ui.MUTED);
+            centered(d, Tr.t("error.chromium"), -6, Ui.DANGER);
+            centered(d, Tr.t("error.details"), 6, Ui.MUTED);
         } else if (!BrowserTabs.isReady()) {
             drawLoading(d);
         } else if (active == null) {
-            centered(d, "Нет открытых вкладок", -6, Ui.TEXT);
-            centered(d, "Нажми + или Ctrl+T", 6, Ui.MUTED);
+            centered(d, Tr.t("empty.title"), -6, Ui.TEXT);
+            centered(d, Tr.t("empty.hint"), 6, Ui.MUTED);
         } else {
             double scale = guiScale();
             active.resize((int) (viewW * scale), (int) (viewH * scale));
@@ -653,16 +653,16 @@ public class OverlayScreen extends CubeScreen {
     private void drawLoading(Draw d) {
         MCEFApi.Initialization init = MCEFApi.initialize();
         String stage = switch (init.getStage()) {
-            case NOT_STARTED -> "Ищу Chromium";
-            case DOWNLOADING -> "Скачиваю Chromium";
-            case EXTRACTING -> "Распаковываю";
-            case INSTALL -> "Устанавливаю";
-            case INITIALIZING, DONE -> "Запускаю браузер";
+            case NOT_STARTED -> Tr.t("load.locating");
+            case DOWNLOADING -> Tr.t("load.downloading");
+            case EXTRACTING -> Tr.t("load.extracting");
+            case INSTALL -> Tr.t("load.installing");
+            case INITIALIZING, DONE -> Tr.t("load.starting");
         };
         int cx = viewX + viewW / 2;
         int cy = viewY + viewH / 2;
         d.centered(stage, cx, cy - 18, Ui.TEXT);
-        d.centered("только при первом запуске, ~150 МБ", cx, cy - 6, Ui.FAINT);
+        d.centered(Tr.t("load.once"), cx, cy - 6, Ui.FAINT);
         float pct = init.getPercentage();
         int barW = Math.min(200, viewW - 40);
         int bx = cx - barW / 2;
@@ -685,8 +685,13 @@ public class OverlayScreen extends CubeScreen {
             if (b.y >= dockY) b.draw(d, mouseX, mouseY);
         }
         int right = width - 10;
-        d.rightAligned("закрыть", right, dockY + 6, Ui.MUTED);
-        Ui.keycaps(d, comboKeys(), right - font.width("закрыть") - 6, dockY + 3);
+        d.rightAligned(Tr.t("close"), right, dockY + 6, Ui.MUTED);
+        Ui.keycaps(d, comboKeys(), right - font.width(Tr.t("close")) - 6, dockY + 3);
+    }
+
+    /** Локаль для даты по языку игры: ru_ru → ru. */
+    private static Locale gameLocale() {
+        return Locale.forLanguageTag(BrowserTabs.gameLanguage());
     }
 
     private String dimensionName() {
@@ -695,9 +700,9 @@ public class OverlayScreen extends CubeScreen {
         int slash = key.lastIndexOf('/');
         String id = slash >= 0 ? key.substring(slash + 1).replace("]", "").trim() : key;
         return switch (id) {
-            case "minecraft:overworld" -> "Верхний";
-            case "minecraft:the_nether" -> "Незер";
-            case "minecraft:the_end" -> "Энд";
+            case "minecraft:overworld" -> Tr.t("dim.overworld");
+            case "minecraft:the_nether" -> Tr.t("dim.nether");
+            case "minecraft:the_end" -> Tr.t("dim.end");
             default -> id.replace("minecraft:", "");
         };
     }

@@ -34,7 +34,7 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
     private int comboX, comboY, comboW;
 
     public SettingsScreen(Screen parent) {
-        super(Component.literal("Настройки Cube Overlay"));
+        super(Component.literal(Tr.t("settings.title")));
         this.parent = parent;
     }
 
@@ -57,7 +57,7 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
         comboY = y + 2;
         buttons.add(new Ui.Button(comboX, comboY, comboW, 16, "", Ui.Style.SOLID, this::startCapture)
                 .selected(() -> capturing));
-        buttons.add(new Ui.Button(right - 40, comboY, 40, 16, "сброс", Ui.Style.GHOST, () -> {
+        buttons.add(new Ui.Button(right - 40, comboY, 40, 16, Tr.t("settings.reset"), Ui.Style.GHOST, () -> {
             combo = KeyCombo.defaultCombo();
             capturing = false;
         }));
@@ -66,7 +66,7 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
         // домашняя страница
         String oldHome = homePage != null ? homePage.getValue() : cfg.homePage;
         homePage = addRenderableWidget(new EditBox(font, comboX + 20, y + 6, right - comboX - 24, 10,
-                Component.literal("Домашняя страница")));
+                Component.literal(Tr.t("settings.home"))));
         homePage.setBordered(false);
         homePage.setMaxLength(2048);
         homePage.setTextColor(Ui.TEXT);
@@ -100,10 +100,10 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
                 () -> cfg.backgroundAlpha = Math.min(255, cfg.backgroundAlpha + 26)));
         y += ROW;
 
-        buttons.add(new Ui.Button(right - 110, y + 3, 110, 16, "Закрыть все", Ui.Style.DANGER,
+        buttons.add(new Ui.Button(right - 110, y + 3, 110, 16, Tr.t("settings.close_all"), Ui.Style.DANGER,
                 () -> CubeOverlay.tabs().closeAll()));
 
-        buttons.add(new Ui.Button(px + 12, py + ph - 26, pw - 24, 18, "Готово", Ui.Style.ACCENT, this::onClose));
+        buttons.add(new Ui.Button(px + 12, py + ph - 26, pw - 24, 18, Tr.t("settings.done"), Ui.Style.ACCENT, this::onClose));
     }
 
     private void startCapture() {
@@ -196,7 +196,7 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
     @Override
     protected void drawContents(Draw d, int mouseX, int mouseY, float partialTick) {
         Ui.glass(d, px, py, pw, ph);
-        d.text("Настройки", px + 12, py + 9, Ui.TEXT);
+        d.text(Tr.t("settings.header"), px + 12, py + 9, Ui.TEXT);
         d.fill(px + 1, py + 23, px + pw - 1, py + 24, Ui.LINE);
 
         for (Ui.Button b : buttons) b.draw(d, mouseX, mouseY);
@@ -206,11 +206,11 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
         int y = py + 30;
 
         // бинд
-        label(d, "Открыть оверлей", capturing ? "зажми и отпусти · Esc — отмена" : "клик — записать новый", y);
+        label(d, Tr.t("settings.bind"), capturing ? Tr.t("settings.bind.recording") : Tr.t("settings.bind.hint"), y);
         List<InputConstants.Key> keys = capturing ? captured : combo.keys();
         if (capturing && keys.isEmpty()) {
             boolean blink = (System.currentTimeMillis() / 400) % 2 == 0;
-            d.centered(blink ? "жду нажатия…" : "", comboX + comboW / 2, comboY + 4, 0xFFFFD866);
+            d.centered(blink ? Tr.t("settings.bind.waiting") : "", comboX + comboW / 2, comboY + 4, 0xFFFFD866);
         } else {
             List<String> names = keys.stream().map(k -> Ui.shortKey(k.getDisplayName().getString())).toList();
             int capsW = 0;
@@ -221,29 +221,29 @@ public class SettingsScreen extends CubeScreen implements ComboTracker.CaptureLi
         if (capturing) Ui.roundOutline(d, comboX, comboY, comboW, 16, Ui.ACCENT);
         y += ROW;
 
-        label(d, "Домашняя страница", null, y);
+        label(d, Tr.t("settings.home"), null, y);
         Ui.round(d, comboX + 16, y + 2, right - comboX - 16, 16, Ui.FIELD);
         Ui.roundOutline(d, comboX + 16, y + 2, right - comboX - 16, 16, homePage.isFocused() ? Ui.ACCENT : Ui.LINE);
         y += ROW;
 
-        label(d, "Пауза в одиночной игре", "как в меню Esc", y);
+        label(d, Tr.t("settings.pause"), Tr.t("settings.pause.hint"), y);
         Ui.toggle(d, right - 20, y + 6, cfg.pauseGame);
         y += ROW;
 
-        label(d, "Боковая панель", "часы, координаты, FPS", y);
+        label(d, Tr.t("settings.sidebar"), Tr.t("settings.sidebar.hint"), y);
         Ui.toggle(d, right - 20, y + 6, cfg.showSidebar);
         y += ROW;
 
-        label(d, "Размер интерфейса", "не зависит от масштаба игры", y);
-        String size = cfg.uiScale == 0 ? "Авто · " + pixelScale + "×" : cfg.uiScale + "×";
+        label(d, Tr.t("settings.scale"), Tr.t("settings.scale.hint"), y);
+        String size = cfg.uiScale == 0 ? Tr.t("settings.scale.auto", pixelScale) : cfg.uiScale + "×";
         d.centered(size, right - 42, y + 7, Ui.TEXT);
         y += ROW;
 
-        label(d, "Затемнение фона", null, y);
+        label(d, Tr.t("settings.dim"), null, y);
         d.centered(Math.round(cfg.backgroundAlpha / 2.55f) + "%", right - 27, y + 7, Ui.TEXT);
         y += ROW;
 
-        label(d, "Вкладки браузера", CubeOverlay.tabs().tabs().size() + " открыто", y);
+        label(d, Tr.t("settings.tabs"), Tr.t("settings.tabs.open", CubeOverlay.tabs().tabs().size()), y);
     }
 
     private void label(Draw d, String title, String hint, int y) {

@@ -52,7 +52,7 @@ public final class BrowserTabs {
                 }
             } catch (IllegalArgumentException ignored) {
             }
-            return url.isEmpty() ? "Новая вкладка" : url;
+            return url.isEmpty() ? Tr.t("tab.new") : url;
         }
 
         public void resize(int width, int height) {

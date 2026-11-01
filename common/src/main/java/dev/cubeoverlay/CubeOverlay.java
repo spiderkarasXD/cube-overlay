@@ -49,8 +49,7 @@ public class CubeOverlay implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (hintDelay > 0 && --hintDelay == 0 && !hintShown && client.player != null) {
                 hintShown = true;
-                Compat.actionBar(Component.literal("§b◆ Cube Overlay§r — нажми §e"
-                        + config.combo().displayName() + "§r, чтобы открыть оверлей"));
+                Compat.actionBar(Component.literal(Tr.t("hint.open", config.combo().displayName())));
             }
             if (SELFTEST) {
                 selfTestTick();

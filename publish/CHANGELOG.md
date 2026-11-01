@@ -1,3 +1,7 @@
+## 1.0.2
+
+- The overlay interface follows the game language (English and Russian; other languages fall back to English).
+
 ## 1.0.1
 
 - Typing in web pages: Backspace, Enter, arrows, Delete, Home/End and Ctrl+A/C/V/X/Z now work (Windows).
