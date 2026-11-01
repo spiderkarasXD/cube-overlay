@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "cubeoverlay",
+  "version": "${version}",
+  "name": "Cube Overlay",
+  "description": "Внутриигровой оверлей как в Steam: браузер с вкладками, часы, инфо об игре. Открывается настраиваемой комбинацией кнопок (по умолчанию Shift + Tab).",
+  "authors": ["spiderkarasXD"],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/cube-overlay",
+    "sources": "https://github.com/spiderkarasXD/cube-overlay",
+    "issues": "https://github.com/spiderkarasXD/cube-overlay/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/cubeoverlay/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.cubeoverlay.CubeOverlay"]
+  },
+  "mixins": ["cubeoverlay.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "${minecraft_dep}",
+    "java": ">=${java_version}",
+    "fabric-api": "*",
+    "mcef-modern": "*"
+  }
+}

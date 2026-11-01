@@ -1,0 +1,73 @@
+// Общие настройки для всех версий. Код из common/ компилируется в каждую версию,
+// а versions/<mc>/src — только то, что отличается между версиями Minecraft.
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = 'dev.cubeoverlay'
+
+base {
+    archivesName = 'cube-overlay'
+}
+
+repositories {
+    exclusiveContent {
+        forRepository {
+            maven { url = 'https://api.modrinth.com/maven' }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
+    mavenCentral()
+}
+
+sourceSets.main {
+    java.srcDir '../../common/src/main/java'
+    resources.srcDir '../../common/src/main/resources'
+}
+
+loom {
+    mixin {
+        defaultRefmapName = 'cubeoverlay.refmap.json'
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(project.java_version as int)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = project.java_version as int
+}
+
+processResources {
+    def props = [
+            version      : project.version,
+            minecraft_dep: project.minecraft_dep,
+            java_version : project.java_version
+    ]
+    inputs.properties props
+    filesMatching(['fabric.mod.json', 'cubeoverlay.mixins.json']) {
+        expand props
+    }
+}
+
+jar {
+    from('../../LICENSE') { rename { 'LICENSE_cube-overlay' } }
+}
+
+// Готовый jar копируется в общую папку dist/, чтобы все версии лежали рядом.
+tasks.register('dist', Copy) {
+    dependsOn tasks.named('build')
+    from(layout.buildDirectory.dir('libs')) {
+        include "cube-overlay-${project.version}.jar"
+    }
+    into '../../dist'
+}
+
+// gradlew runClient -Pselftest — оверлей сам откроется через 5 секунд, в лог пишется состояние браузера.
+if (project.hasProperty('selftest')) {
+    loom.runs.named('client') {
+        vmArg '-Dcubeoverlay.selftest=true'
+        programArgs '--width', '1440', '--height', '810'
+    }
+}

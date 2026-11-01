@@ -1,0 +1,17 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+apply from: '../shared.gradle'
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modImplementation "maven.modrinth:mcef-modern:${mcef_version}"
+    compileOnly "me.friwi:jcef-api:${jcef_api_version}"
+    // в dev-клиенте 1.21.11 Loom не раскрывает jar-in-jar из MCEF — подкладываем руками (в игре не нужно)
+    localRuntime "me.friwi:jcef-api:${jcef_api_version}"
+    localRuntime "me.friwi:jcefmaven:146.0.10"
+}
