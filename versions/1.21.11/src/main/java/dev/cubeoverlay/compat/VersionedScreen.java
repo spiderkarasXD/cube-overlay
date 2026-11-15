@@ -12,6 +12,9 @@ public abstract class VersionedScreen extends Screen {
         super(title);
     }
 
+    protected void setBrowserTextInput(boolean focused) {
+    }
+
     /** Затемнение поверх размытого мира. */
     protected abstract void drawBackdrop(Draw d);
 
