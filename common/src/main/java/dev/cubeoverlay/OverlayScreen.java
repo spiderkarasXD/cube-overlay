@@ -237,12 +237,23 @@ public class OverlayScreen extends CubeScreen {
         browserFocused = true;
         if (address != null) address.setFocused(false);
         setFocused(null);
+        setBrowserTextInput(true);
         withTab(t -> t.browser().setFocus(true));
     }
 
     private void unfocusBrowser() {
         browserFocused = false;
+        setBrowserTextInput(false);
         withTab(t -> t.browser().setFocus(false));
+    }
+
+    private void closeTab(int index) {
+        tabs.close(index);
+        if (browserFocused) {
+            if (tabs.active() == null) unfocusBrowser();
+            else focusBrowser();
+        }
+        syncAddress(true);
     }
 
     private void syncAddress(boolean force) {
@@ -320,12 +331,12 @@ public class OverlayScreen extends CubeScreen {
         int hit = tabAt(mx, my);
         if (hit >= 0) {
             if (event.button() == 2 || onTabClose(hit, mx)) {
-                tabs.close(hit);
+                closeTab(hit);
             } else {
                 tabs.select(hit);
                 focusBrowser();
+                syncAddress(true);
             }
-            syncAddress(true);
             return true;
         }
         if (onPlus(mx, my)) {
@@ -416,8 +427,7 @@ public class OverlayScreen extends CubeScreen {
                 return true;
             }
             if (is(event, "key.keyboard.w")) {
-                tabs.close(tabs.activeIndex());
-                syncAddress(true);
+                closeTab(tabs.activeIndex());
                 return true;
             }
             if (is(event, "key.keyboard.l")) {
@@ -427,6 +437,7 @@ public class OverlayScreen extends CubeScreen {
             if (is(event, "key.keyboard.tab") && !tabs.tabs().isEmpty()) {
                 int n = tabs.tabs().size();
                 tabs.select((tabs.activeIndex() + (event.hasShiftDown() ? n - 1 : 1)) % n);
+                if (browserFocused) focusBrowser();
                 syncAddress(true);
                 return true;
             }
